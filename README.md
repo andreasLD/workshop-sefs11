@@ -32,7 +32,7 @@ For this course we need a few extra packages. We will provide a script that auto
 
 
 ### Downloading code and data
-https://github.com/andreasLD/workshop-sefs11.git
+
 1. [Click here](https://github.com/andreasLD/workshop-sefs11/archive/master.zip) to download all the material.
 2. Unzip the file - The unzipped folder contains all files and folders of this online repository.
 
@@ -47,7 +47,7 @@ The course is structured into four parts of roughly 1.5-2 hours:
 * [Course Evaluation](https://docs.google.com/forms/d/1wYkbajB_q5NPxzqJfS4gAwrRro7BcOd4OE_W5tmiOYo/viewform?usp=send_form) (**16.30 - 45.00**) - see link below.
 
 Each part has its own folder, with slides, data, code and other materials.
-Each lecture is structured in: Intro - Demo - Exercise
+Each lecture is structured into: Intro - Demo - Exercise
 
 
 ## Feedback
