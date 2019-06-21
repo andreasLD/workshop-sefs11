@@ -44,7 +44,7 @@ The course is structured into four parts of roughly 1.5-2 hours:
 * Model selection for linear and generalized linear models (Ralf B. Schäfer) **10.00 - 12.00**
 * Generalized Additive Models (Andreas Scharmüller) **13.00 - 14.30**
 * Structural equation modelling (Moritz Link) **15.00 - 16.30**
-* [Course Evaluation](https://docs.google.com/forms/d/1wYkbajB_q5NPxzqJfS4gAwrRro7BcOd4OE_W5tmiOYo/viewform?usp=send_form) (**16.30 - 16.45**) - see link below.
+* [Course Evaluation](https://forms.gle/EPGJYskcVhTCEPV28) (**16.30 - 16.45**) - see link below.
 
 Each part has its own folder, with slides, data, code and other materials.
 Each lecture is structured into: Intro - Demo - Exercise
@@ -52,7 +52,7 @@ Each lecture is structured into: Intro - Demo - Exercise
 
 ## Feedback
 
-Please rate our course by filling [this questionnaire](https://docs.google.com/forms/d/1wYkbajB_q5NPxzqJfS4gAwrRro7BcOd4OE_W5tmiOYo/viewform?usp=send_form). It is anonymous and will be only used to improve the course.
+Please rate our course by filling [this questionnaire](https://forms.gle/EPGJYskcVhTCEPV28). It is anonymous and will be only used to improve the course.
 
 
 ## License  
