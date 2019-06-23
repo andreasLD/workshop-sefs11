@@ -34,3 +34,16 @@ xkcd
 extrafont
 modEvA
 countreg
+ape
+devtools
+lavaan
+lme4
+lmerTest
+ncf
+nlme
+plyr
+sp
+semTools
+semPlot
+data.table
+tidyverse
