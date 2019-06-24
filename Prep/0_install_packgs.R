@@ -3,4 +3,5 @@ str(pkgs)
 install.packages(pkgs)
 
 ## piecewiseSEM from GitHub, needs R-Version 3.5 and newer
-install_github("jslefche/piecewiseSEM@devel", build_vignette = TRUE)
+devtools::install_github("jslefche/piecewiseSEM@devel", build_vignette = TRUE)
+devtools::install_github("mfasiolo/mgcViz")

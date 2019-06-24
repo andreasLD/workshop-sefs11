@@ -47,3 +47,8 @@ semTools
 semPlot
 data.table
 tidyverse
+mgcv
+gratia
+
+
+
