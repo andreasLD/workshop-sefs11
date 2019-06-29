@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>Generalized Additive Models</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andreas Scharmüller" />
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Generalized Additive Models
+## An introduction
+### Andreas Scharmüller
+### Quantitative Landscape Ecology<br>University Koblenz-Landau
+### 30.6.2019 (updated: 2019-06-29)
+
+---
+
+
+
+
+# Short intro: Andreas Scharmüller
+
+- PhD student Quantitative Landscape Ecology
+
+- Environmental Sciences + Ecotoxicology
+
+- Research
+  - Effects and distribution of pesticides in freshwaters
+  - Big(ish) ecotoxicological data processing
+
+Talk: Ecotoxicology and stress responses: Monday, 14:45 (Crystall ballroom 2G)
+  
+- Teaching:
+  - Statistics
+  - GIS
+
+- R programming
+  - Package author: standartox (in preparation)
+  - Package contributions: webchem
+  
+  
+&lt;img src='/home/scharmueller/Projects/workshop-sefs11/organisation/andreas_mai14_groß.jpg' width='150px'
+style='position:absolute; right:40px; top:100px;'&gt;
+
+
+
+---
+# Research
+
+- Seasonal occurrence patterns of __pesticides__ in small waterbodies in Germany
+
+- Modeling __benthic diatom__ abundance and occurrence patterns in freshwater
+
+
+&lt;img src="/home/scharmueller/Projects/model-seasonality/pre_emergence_herbicides.png" width="500px" style="position:absolute; left:15px; bottom:20px;"&gt;
+
+&lt;img src="/home/scharmueller/Projects/workshop-sefs11/data/szoecs_risk.png" width="350px" style="position:absolute; right:70px; bottom:190px;"&gt;
+
+---
+class: center, inverse, middle
+
+# Linear Regression
+
+
+---
+# Linear Models (LM)
+
+- easy to interpret
+- confined to linear relationships
+- normally distributed responses
+
+`$$y = \beta_0 + x_1\beta_1 + \epsilon, \epsilon \sim N(0,\sigma^2)$$`
+
+
+```r
+lm(y ~ x,
+   data = data)
+```
+
+
+![](GAM_files/figure-html/unnamed-chunk-2-1.png)&lt;!-- --&gt;
+
+
+---
+# Generalized Linear Models (GLM)
+
+- additional distributions (Poisson, Gamma, Binomial, etc.)
+
+`$$\mathbb{E}(y) = \beta_0 + x_1\beta_1 + x_2\beta_2 + \epsilon$$`
+
+```r
+glm(y ~ x,
+    data = data,
+    family = 'Gamma')
+```
+
+
+![](GAM_files/figure-html/unnamed-chunk-4-1.png)&lt;!-- --&gt;
+
+
+
+---
+# Polynomial regression
+
+- specific patterns, not as flexible as GAMs
+- might lead to poor residuals, predictions, extrapolations
+
+`$$y = \beta_0 + \beta_1x_1 + \beta_2x_1^2 + \beta_3x_1^3 + \epsilon, \epsilon \sim N(0,\sigma^2)$$`
+
+
+```r
+lm(y ~ poly(x, 3),
+   data = data)
+```
+
+![](GAM_files/figure-html/unnamed-chunk-6-1.png)&lt;!-- --&gt;
+
+---
+class: center, inverse, middle
+
+# Generalized Additive models (GAM)
+
+---
+# Generalized Additive Models (GAM)
+
+- extension to GLMs
+- more flexible
+- can be harder to interpret
+
+
+`$$\mathbb{E}(y) = \beta_0 + f_1(x_1) + x_2\beta_2 + \epsilon$$`
+
+```r
+mgcv::gam(y ~ s(x1) + x2,
+          data = data,
+          family = 'gaussian')
+```
+
+![](GAM_files/figure-html/unnamed-chunk-8-1.png)&lt;!-- --&gt;
+
+---
+# Why GAMs?
+
+&lt;https://noamross.github.io/gams-in-r-course&gt;
+
+&lt;img src='https://raw.githubusercontent.com/noamross/gams-in-r-course/master/images/tradeoff-slider.png'
+width='650px' style="position:absolute; left:130px; top:350px;"&gt;
+
+&lt;img src='/home/scharmueller/Projects/workshop-sefs11/organisation/noam_ross_gam_course.png'
+width='300px' style="position:absolute; right:60px; top:40px;"&gt;
+
+---
+# What are GAMs?
+
+&lt;https://www.fromthebottomoftheheap.net&gt;
+
+&lt;blockquote class="twitter-tweet" data-conversation="none" data-lang="fr"&gt;&lt;p lang="en" dir="ltr"&gt;140 char vrsn&lt;br&gt;&lt;br&gt;1 GAMs are just GLMs&lt;br&gt;2 GAMs fit wiggly terms&lt;br&gt;3 use + s(foo) not foo in frmla&lt;br&gt;4 use method = &amp;quot;REML&amp;quot;&lt;br&gt;5 gam.check()&lt;/p&gt;&amp;mdash; Dr Gavin Simpson (@ucfagls) &lt;a href="https://twitter.com/ucfagls/status/842444686513991680?ref_src=twsrc%5Etfw"&gt;16 march 2017&lt;/a&gt;&lt;/blockquote&gt;
+&lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8"&gt;&lt;/script&gt;
+
+---
+# GAMs in R
+
+`require(mgcv)` &lt;https://cran.r-project.org/web/packages/mgcv/index.html&gt;
+
+`require(gamlss)` &lt;https://cran.r-project.org/web/packages/gamlss/index.html&gt;
+
+`require(brms)` &lt;https://github.com/paul-buerkner/brms&gt;
+
+---
+# GAMs in R
+
+`require(mgcv)` &lt;https://cran.r-project.org/web/packages/mgcv/index.html&gt;
+
+&lt;img src='https://images.tandf.co.uk/common/jackets/amazon/978149872/9781498728331.jpg' width='300px'
+style="position:absolute; right:400px; top:200px;"&gt;
+
+---
+# GAMs in R
+
+R-function:
+
+
+```r
+require(mgcv)
+
+gam(y ~ s(x1, bs = 'tp', k = -1) + x2, # formula
+    data = data, # data
+    family = 'gaussian', # family object
+    method = 'REML' # default: 'GCV.Cp'
+    sp = NULL) # smoothing parameter
+```
+
+---
+# GAMs in R
+
+Formula:
+
+
+```r
+require(mgcv)
+
+# gam(y ~ 
+      s(# smooth term
+        x1, # predictor
+        bs = 'tp', # spline basis
+        k = -1, # number of basis functions
+        sp = NULL  # smoothing parameter
+      )
+    # + x2, # linear term
+    # data = data,
+    # family = 'gaussian',
+    # method = 'REML' # default: 'GCV.Cp'
+    # sp = NULL)
+```
+
+---
+class: center, inverse, middle
+# Smoothing
+
+---
+# Smoothing
+
+`$$Fit = Likelihood - \lambda \times Wiggliness$$`
+
+- Likelihood: How well a GAM captures patterns in the data
+- Wiggliness: Complexity of a smooth
+- Trade-off between Likelihood and Wiggliness
+- `\(\lambda\)` is optimized in `gam()` and controls the trade-off
+
+.footnote[
+taken from: &lt;https://noamross.github.io/gams-in-r-course&gt;
+]
+
+---
+# Smoothing
+
+### Smoothing parameter
+
+
+```r
+gam(y ~ s(x1, sp = NULL),
+    data = data,
+    sp = NULL,
+    method = 'REML')
+```
+
+- smootghin paramter
+- estimated in REML
+
+---
+# Smoothing
+
+### Smoothing parameter
+
+
+
+![](GAM_files/figure-html/unnamed-chunk-13-1.png)&lt;!-- --&gt;
+
+- A: `sp = 0`
+- B: `sp = 1e5`
+- C: `method = 'REML'`
+
+
+---
+# Smoothing
+
+### Basis Functions
+
+
+```r
+gam(y ~ s(x1, k = 3),
+    data = data)
+```
+
+![](GAM_files/figure-html/unnamed-chunk-15-1.png)&lt;!-- --&gt;
+
+---
+# Smoothing
+
+### Basis Functions
+
+
+```r
+gam(y ~ s(x1),
+    data = data)
+```
+
+![](GAM_files/figure-html/unnamed-chunk-17-1.png)&lt;!-- --&gt;
+
+---
+# Smoothing
+
+### Basis Functions
+
+Check for k:
+
+
+```r
+gam.check(oc1)
+```
+
+
+```r
+k.check(oc1)
+```
+
+```
+##      k'      edf  k-index p-value
+## s(P)  2 1.972523 0.419655       0
+```
+
+--
+If p-value is low, k might be too small
+
+---
+class: center, inverse, middle
+
+# Smooth terms
+
+---
+# Smooth terms
+
+Two additive smooths
+
+```r
+gam(y ~ s(x1) + s(x2))
+```
+
+--
+Smooth-interactions
+
+```r
+gam(y ~ s(x1, x2, k = 4))
+gam(y ~ s(x1, by = fac))
+```
+
+--
+Tensor product smooths
+
+```r
+gam(y ~ te(x1, x2, k = c(4,8))) # interaction on different scales
+```
+
+---
+class: center, inverse, middle
+# Splines
+
+---
+# Splines
+
+__Thin plate__ regression spline
+
+- default
+
+
+```r
+gam(y ~ s(x, bs = 'tp'),
+    data = data)
+```
+
+---
+# Splines
+
+__Cyclic cubic__ regression splines
+
+- for cyclical data (e.g. seasons)
+
+
+```r
+gam(y ~ s(x, bs = 'cc'),
+    data = data)
+```
+
+&lt;img src="/home/scharmueller/Projects/model-seasonality/pre_emergence_herbicides.png" width="500px" style="position:absolute; right:30px; bottom:20px;"&gt;
+
+---
+# Splines
+
+__Soap Films__
+- boundary polygons can be introduced
+- spatial models
+
+
+```r
+gam(y ~ s(x, y, bs = 'so', xt = list(bnd = boundary_polygon)),
+    data = data)
+```
+
+---
+# Splines
+
+Discrete __random effects__
+
+- classes (e.g. age, sex)
+- sites, states, rivers, lakes
+- no need to set k (equals number of levels)
+  
+
+```r
+gam(y ~ s(x, bs = 're'),
+    data = data)
+```
+
+---
+class: center, inverse, middle
+# Visualisation
+
+---
+# Visualisation
+
+
+```r
+ir1 = gam(Sepal.Length ~ s(Petal.Length),
+          data = iris,
+          family = 'gaussian',
+          method = 'REML')
+```
+
+---
+# Visualisation
+
+Partial effect plots
+
+.pull-left[
+
+```r
+require(mgcv)
+plot(ir1, pages = 1)
+```
+
+![](GAM_files/figure-html/unnamed-chunk-28-1.png)&lt;!-- --&gt;
+]
+
+.pull-right[
+
+```r
+require(gratia)
+draw(ir1)
+```
+
+![](GAM_files/figure-html/unnamed-chunk-29-1.png)&lt;!-- --&gt;
+]
+
+---
+# Visualisation
+
+Multiple covariates
+
+
+```r
+mt1 = gam(mpg ~ s(disp) + s(hp),
+          data = mtcars,
+          family = 'gaussian',
+          method = 'REML')
+```
+
+---
+# Visualisation
+
+
+```r
+vis.gam(mt1, # GAM object
+        view = c("disp", "hp"), # variables
+        plot.type = "persp", # 3D plot
+        theta = 135, # horizontal rotation
+        phi = 10, # phi vertical rotation
+        r = 10) # zoom
+```
+
+![](GAM_files/figure-html/unnamed-chunk-31-1.png)&lt;!-- --&gt;
+
+???
+yellow: larger predictions&lt;br&gt;
+red: smaller predictions&lt;br&gt;
+mpg: miles per gallon&lt;br&gt;
+disp: displacement (German: Hubraum)&lt;br&gt;
+hp: horsepower&lt;br&gt;
+
+---
+# Visualisation
+
+
+```r
+vis.gam(mt1, # GAM object
+        view = c("disp", "hp"), # variables
+        plot.type = "contour") # contour plot or heatmap
+```
+
+![](GAM_files/figure-html/unnamed-chunk-32-1.png)&lt;!-- --&gt;
+
+---
+class: center, inverse, middle
+# Exercise 1
+
+---
+class: center, inverse, middle
+# Hierachical GAMs
+
+---
+# Hierachical GAMs
+
+- Hierachical data: grouped data (factor!)
+- non-linear relationships
+- shape of function can vary between grouping/factor levels
+
+&lt;br&gt;
+
+![](/home/scharmueller/Projects/workshop-sefs11/data/pederson_hierachical_gam.png)
+
+---
+# Global Smoother
+
+- single global smooth term for each variable
+- level-individual __random effect intercepts__ (`bs = 're'`)
+
+
+```r
+spr_G = gam(logSize ~ s(days) +
+                      s(plot, bs = 're'),
+            data = Spruce,
+            method = 'REML')
+plot(spr_G, pages = 1)
+```
+
+![](GAM_files/figure-html/unnamed-chunk-33-1.png)&lt;!-- --&gt;
+
+---
+# Global Smoother + Group Level Smoother
+
+- factor-smooth interaction (`bs = 'fs'`)
+- single global smooth term for each variable
+- __varying slopes__
+- same wiggliness (i.e. complexity) of smooths
+
+
+```r
+spr_GS = gam(logSize ~ s(days) +
+                       s(days, plot, bs = 'fs'),
+             data = Spruce,
+             method = 'REML')
+plot(spr_GS, pages = 1)
+```
+
+![](GAM_files/figure-html/unnamed-chunk-34-1.png)&lt;!-- --&gt;
+
+---
+# Global Smoother + Group Level Smoother
+
+- `s(x, by = fac)` and `s(fac, bs = 're')`
+- similar to GS
+- varying slopes
+- __different wiggliness__ (i.e. complexity) of smooths
+
+
+```r
+spr_GI = gam(logSize ~ s(days) +
+                       s(days, by = plot) +
+                       s(plot, bs = 're'),
+            data = Spruce,
+            method = 'REML')
+```
+
+---
+class: center, inverse, middle
+# Model output
+
+---
+# Model output
+
+
+
+
+
+Summary
+
+```r
+summary(mod)
+```
+
+Checking
+
+```r
+gam.check(mod)
+```
+
+AIC
+
+```r
+AIC(mod)
+```
+
+Predict
+
+```r
+predict(mod)
+```
+
+---
+# Model summary
+
+
+```
+## 
+## Family: poisson 
+## Link function: log 
+## 
+## Formula:
+## egg.count ~ s(c.dist) + s(salinity)
+## 
+## Parametric coefficients:
+##             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)  2.22458    0.04077   54.57   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Approximate significance of smooth terms:
+##               edf Ref.df Chi.sq p-value    
+## s(c.dist)   8.559  8.938  255.8  &lt;2e-16 ***
+## s(salinity) 8.886  8.992 1204.7  &lt;2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## R-sq.(adj) =  0.165   Deviance explained = 28.9%
+## UBRE = 19.928  Scale est. = 1         n = 330
+```
+
+---
+# Model checking
+
+![](GAM_files/figure-html/unnamed-chunk-43-1.png)&lt;!-- --&gt;
+
+```
+## 
+## Method: UBRE   Optimizer: outer newton
+## full convergence after 7 iterations.
+## Gradient range [-6.429391e-09,1.404011e-05]
+## (score 19.92823 &amp; scale 1).
+## Hessian positive definite, eigenvalue range [0.0005784184,0.001996275].
+## Model rank =  19 / 19 
+## 
+## Basis dimension (k) checking results. Low p-value (k-index&lt;1) may
+## indicate that k is too low, especially if edf is close to k'.
+## 
+##               k'  edf k-index p-value    
+## s(c.dist)   9.00 8.56    1.04    0.94    
+## s(salinity) 9.00 8.89    0.71  &lt;2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+```
+##             k'      edf   k-index p-value
+## s(c.dist)    9 8.558545 1.0426196    0.96
+## s(salinity)  9 8.886238 0.7088091    0.00
+```
+
+???
+gam.check() - console output
+
+- number of basis functions
+  - If a term in gam.check is significant, increas k, refit and check again
+
+gam.check() - plots
+
+- Q-Q plot (compares residuals to a normal distribution)
+  - follow straight line
+- Histogram of residuals
+  - should be bell symmetrically shaped
+- Residual vs. Linear predictors
+  - Should be evenly distributed around zero
+- Response vs. Fitted values
+  - Perfect model would be a straight line
+  - We would also be happy if would follow a 1-to-1 line
+
+---
+# Model checking
+![](GAM_files/figure-html/unnamed-chunk-44-1.png)&lt;!-- --&gt;
+
+```
+## 
+## Method: REML   Optimizer: outer newton
+## full convergence after 5 iterations.
+## Gradient range [-0.0001075229,9.593977e-05]
+## (score 71.222 &amp; scale 4.071951).
+## Hessian positive definite, eigenvalue range [0.04951955,14.74743].
+## Model rank =  19 / 19 
+## 
+## Basis dimension (k) checking results. Low p-value (k-index&lt;1) may
+## indicate that k is too low, especially if edf is close to k'.
+## 
+##           k'  edf k-index p-value
+## s(hp)   9.00 1.36    0.95    0.26
+## s(disp) 9.00 4.67    1.37    0.96
+```
+
+---
+class: center, inverse, middle
+# Exercise 2
+
+---
+class: middle
+# [Thank you for participating in the course!]()
+
+Structural Equation Modelling (Moritz Link) 15.00 - 16.30
+
+---
+# Tutorials, Blogs
+
+- Generalized Additive Models in R (Noam Ross)
+  - &lt;https://noamross.github.io/gams-in-r-course&gt;
+- Doing magic and analyzing seasonal time series with GAM (Generalized Additive Model) in R
+  - &lt;https://petolau.github.io/Analyzing-double-seasonal-time-series-with-GAM-in-R/&gt;
+- From the Bottom of the Heap - Blog by Gavin Simpson
+  - &lt;https://www.fromthebottomoftheheap.net/&gt;
+- Introducing gratia
+  - &lt;https://www.fromthebottomoftheheap.net/2018/10/23/introducing-gratia/&gt;
+- Noam Ross Github
+  - &lt;https://github.com/noamross/gam-resources&gt;
+- Environmental computing
+ - &lt;http://environmentalcomputing.net/intro-to-gams&gt;
+
+---
+# Prediction
+
+
+```r
+gam_sim = gam(y ~ s(x),
+              data = sim,
+              family = 'gaussian')
+pred = predict(gam_sim, type = 'response', se.fit = TRUE)
+
+sim$fit = pred$fit
+sim$lwr = pred$fit - (2 * pred$se.fit)
+sim$upr = pred$fit + (2 * pred$se.fit)
+```
+
+![](GAM_files/figure-html/unnamed-chunk-46-1.png)&lt;!-- --&gt;
+
+---
+class: center, inverse, middle
+# Model selection
+
+---
+# Model selection
+
+If you are not interested in prediction, but the most parsimonious model
+
+- penalty on overall slope (in addition to wiggliness penalty)
+- similar to ridge regression, lasso
+
+
+```r
+select = TRUE
+```
+
+
+```r
+gam(y ~ s(x1) + s(x2) + s(x3),
+    select = TRUE,
+    data = data,
+    method = 'REML')
+```
+
+---
+# Model selection
+
+- AIC
+- expert subject
+- computational time
+- inferential goals of the study
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

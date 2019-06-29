@@ -1,0 +1,814 @@
+---
+title: "Generalized Additive Models"
+subtitle: "An introduction"
+author: "Andreas Scharmüller"
+institute: "Quantitative Landscape Ecology<br>University Koblenz-Landau"
+date: "30.6.2019 (updated: `r Sys.Date()`)"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, echo=FALSE, include=FALSE, message=FALSE, warning=FALSE}
+## packages
+require(mgcv)
+require(gamair)
+require(data.table)
+require(ggplot2)
+require(rmarkdown)
+require(xaringan)
+
+## working directory
+prj = '/home/scharmueller/Projects/workshop-sefs11'
+datadir = file.path(prj, 'data')
+srcdir = file.path(prj, 'src')
+
+## source
+source(file.path(srcdir, 'ggplot_theme.R'))
+
+## plot setup
+theme_set(theme_as) # TODO make font size bigger
+
+## data
+# simulation
+set.seed(1234)
+sim = gamSim(1, n=100, dist="normal", scale=2, verbose = FALSE)
+sim$y = sim$y - (sim$f1 + sim$f0 + sim$f3)
+sim$y = sim$y + 5
+sim$x <- sim$x2
+# true <- data.frame(x = sort(sim$x),
+#                    y = sim$f2[order(sim$x)])
+
+# mackerel
+data('mack')
+```
+
+# Short intro: Andreas Scharmüller
+
+- PhD student Quantitative Landscape Ecology
+
+- Environmental Sciences + Ecotoxicology
+
+- Research
+  - Effects and distribution of pesticides in freshwaters
+  - Big(ish) ecotoxicological data processing
+
+Talk: Ecotoxicology and stress responses: Monday, 14:45 (Crystall ballroom 2G)
+  
+- Teaching:
+  - Statistics
+  - GIS
+
+- R programming
+  - Package author: standartox (in preparation)
+  - Package contributions: webchem
+  
+  
+<img src='/home/scharmueller/Projects/workshop-sefs11/organisation/andreas_mai14_groß.jpg' width='150px'
+style='position:absolute; right:40px; top:100px;'>
+
+
+
+---
+# Research
+
+- Seasonal occurrence patterns of __pesticides__ in small waterbodies in Germany
+
+- Modeling __benthic diatom__ abundance and occurrence patterns in freshwater
+
+
+<img src="/home/scharmueller/Projects/model-seasonality/pre_emergence_herbicides.png" width="500px" style="position:absolute; left:15px; bottom:20px;">
+
+<img src="/home/scharmueller/Projects/workshop-sefs11/data/szoecs_risk.png" width="350px" style="position:absolute; right:70px; bottom:190px;">
+
+---
+class: center, inverse, middle
+
+# Linear Regression
+
+
+---
+# Linear Models (LM)
+
+- easy to interpret
+- confined to linear relationships
+- normally distributed responses
+
+$$y = \beta_0 + x_1\beta_1 + \epsilon, \epsilon \sim N(0,\sigma^2)$$
+
+```{r eval=FALSE}
+lm(y ~ x,
+   data = data)
+```
+
+
+```{r echo=FALSE, fig.width=6, fig.height=4}
+ggplot(sim, aes(y = y, x = x)) +
+  geom_point() +
+  geom_smooth(method = 'lm', se = FALSE, aes(col = 'blue')) +
+  scale_color_manual(name = '',
+                     values = 'blue',
+                     labels = 'Linear model') +
+  theme(legend.position = 'bottom')
+```
+
+
+---
+# Generalized Linear Models (GLM)
+
+- additional distributions (Poisson, Gamma, Binomial, etc.)
+
+$$\mathbb{E}(y) = \beta_0 + x_1\beta_1 + x_2\beta_2 + \epsilon$$
+```{r eval=FALSE}
+glm(y ~ x,
+    data = data,
+    family = 'Gamma')
+```
+
+
+```{r echo=FALSE, fig.width=6, fig.height=4}
+ggplot(sim, aes(y = y, x = x)) +
+  geom_point() +
+  geom_smooth(method = 'glm', method.args = list(family = 'Gamma'), se = FALSE, aes(col = 'blue')) +
+  scale_color_manual(name = '',
+                     values = 'blue',
+                     labels = 'Generalized Linear model') +
+  theme(legend.position = 'bottom')
+```
+
+
+
+---
+# Polynomial regression
+
+- specific patterns, not as flexible as GAMs
+- might lead to poor residuals, predictions, extrapolations
+
+$$y = \beta_0 + \beta_1x_1 + \beta_2x_1^2 + \beta_3x_1^3 + \epsilon, \epsilon \sim N(0,\sigma^2)$$
+
+```{r eval=FALSE}
+lm(y ~ poly(x, 3),
+   data = data)
+```
+
+```{r echo=FALSE, fig.width=6, fig.height=4}
+ggplot(sim, aes(x, y)) +
+  geom_point() +
+  geom_smooth(method = 'lm', formula = y ~ poly(x, 3),
+              se = FALSE, aes(col = 'goldenrod')) +
+  geom_smooth(method = 'lm', formula = y ~ poly(x, 9),
+              se = FALSE, aes(col = 'purple')) +
+  scale_color_manual(name = '',
+                     values = c('goldenrod', 'purple'),
+                     labels = c('3rd order polynomial', '9th order polynomial')) +
+  theme(legend.position = 'bottom')
+```
+
+---
+class: center, inverse, middle
+
+# Generalized Additive models (GAM)
+
+---
+# Generalized Additive Models (GAM)
+
+- extension to GLMs
+- more flexible
+- can be harder to interpret
+
+
+$$\mathbb{E}(y) = \beta_0 + f_1(x_1) + x_2\beta_2 + \epsilon$$
+```{r eval=FALSE}
+mgcv::gam(y ~ s(x1) + x2,
+          data = data,
+          family = 'gaussian')
+```
+
+```{r echo=FALSE, fig.width=6, fig.height=4}
+ggplot(sim, aes(y = y, x = x)) +
+  geom_point() +
+  geom_smooth(method = 'gam', formula = y ~ s(x), se = FALSE, aes(col = 'red')) +
+  scale_color_manual(name = '',
+                     values = 'red',
+                     labels = 'Additive model') +
+  theme(legend.position = 'bottom')
+```
+
+---
+# Why GAMs?
+
+<https://noamross.github.io/gams-in-r-course>
+
+<img src='https://raw.githubusercontent.com/noamross/gams-in-r-course/master/images/tradeoff-slider.png'
+width='650px' style="position:absolute; left:130px; top:350px;">
+
+<img src='/home/scharmueller/Projects/workshop-sefs11/organisation/noam_ross_gam_course.png'
+width='300px' style="position:absolute; right:60px; top:40px;">
+
+---
+# What are GAMs?
+
+<https://www.fromthebottomoftheheap.net>
+
+<blockquote class="twitter-tweet" data-conversation="none" data-lang="fr"><p lang="en" dir="ltr">140 char vrsn<br><br>1 GAMs are just GLMs<br>2 GAMs fit wiggly terms<br>3 use + s(foo) not foo in frmla<br>4 use method = &quot;REML&quot;<br>5 gam.check()</p>&mdash; Dr Gavin Simpson (@ucfagls) <a href="https://twitter.com/ucfagls/status/842444686513991680?ref_src=twsrc%5Etfw">16 march 2017</a></blockquote>
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+---
+# GAMs in R
+
+`require(mgcv)` <https://cran.r-project.org/web/packages/mgcv/index.html>
+
+`require(gamlss)` <https://cran.r-project.org/web/packages/gamlss/index.html>
+
+`require(brms)` <https://github.com/paul-buerkner/brms>
+
+---
+# GAMs in R
+
+`require(mgcv)` <https://cran.r-project.org/web/packages/mgcv/index.html>
+
+<img src='https://images.tandf.co.uk/common/jackets/amazon/978149872/9781498728331.jpg' width='300px'
+style="position:absolute; right:400px; top:200px;">
+
+---
+# GAMs in R
+
+R-function:
+
+```{r eval=FALSE}
+require(mgcv)
+
+gam(y ~ s(x1, bs = 'tp', k = -1) + x2, # formula
+    data = data, # data
+    family = 'gaussian', # family object
+    method = 'REML' # default: 'GCV.Cp'
+    sp = NULL) # smoothing parameter
+```
+
+---
+# GAMs in R
+
+Formula:
+
+```{r eval=FALSE}
+require(mgcv)
+
+# gam(y ~ 
+      s(# smooth term
+        x1, # predictor
+        bs = 'tp', # spline basis
+        k = -1, # number of basis functions
+        sp = NULL  # smoothing parameter
+      )
+    # + x2, # linear term
+    # data = data,
+    # family = 'gaussian',
+    # method = 'REML' # default: 'GCV.Cp'
+    # sp = NULL)
+```
+
+---
+class: center, inverse, middle
+# Smoothing
+
+---
+# Smoothing
+
+$$Fit = Likelihood - \lambda \times Wiggliness$$
+
+- Likelihood: How well a GAM captures patterns in the data
+- Wiggliness: Complexity of a smooth
+- Trade-off between Likelihood and Wiggliness
+- $\lambda$ is optimized in `gam()` and controls the trade-off
+
+.footnote[
+taken from: <https://noamross.github.io/gams-in-r-course>
+]
+
+---
+# Smoothing
+
+### Smoothing parameter
+
+```{r eval=FALSE}
+gam(y ~ s(x1, sp = NULL),
+    data = data,
+    sp = NULL,
+    method = 'REML')
+```
+
+- smootghin paramter
+- estimated in REML
+
+---
+# Smoothing
+
+### Smoothing parameter
+
+```{r echo=FALSE, include=FALSE, message=FALSE, warning=FALSE}
+sp1 = gam(y ~ s(x, k = 100),
+          data = sim,
+          sp = 0)
+sim$pr1 = predict(sp1, type = 'response')
+gg_sp1 = ggplot(sim, aes(x = x)) +
+  geom_point(aes(y = y)) +
+  geom_line(aes(y = pr1), lwd = 1.1, col = 'red')
+
+sp2 = gam(y ~ s(x, k = 100),
+          data = sim,
+          sp = 1e5)
+sim$pr2 = predict(sp2, type = 'response')
+gg_sp2 = ggplot(sim, aes(x = x)) +
+  geom_point(aes(y = y)) +
+  geom_line(aes(y = pr2), lwd = 1.1, col = 'red')
+
+sp3 = gam(y ~ s(x, k = 100),
+          data = sim,
+          method = 'REML')
+sim$pr3 = predict(sp3, type = 'response')
+gg_sp3 = ggplot(sim, aes(x = x)) +
+  geom_point(aes(y = y)) +
+  geom_line(aes(y = pr3), lwd = 1.1, col = 'red')
+```
+
+```{r echo=FALSE, fig.width=24, fig.height=6}
+cowplot::plot_grid(gg_sp1, gg_sp2, gg_sp3,
+                   nrow = 1, labels = "AUTO")
+```
+
+- A: `sp = 0`
+- B: `sp = 1e5`
+- C: `method = 'REML'`
+
+
+---
+# Smoothing
+
+### Basis Functions
+
+```{r eval=FALSE}
+gam(y ~ s(x1, k = 3),
+    data = data)
+```
+
+```{r echo=FALSE, fig.width=6, fig.height=4}
+oc = read.csv("http://datadryad.org/bitstream/handle/10255/dryad.39576/OstraMRegS400JB.txt?sequence=1", 
+              sep = "\t")
+
+oc1 = gam(SP ~ s(P, k = 3),
+          data = oc,
+          method = 'REML')
+oc2 = gam(SP ~ s(P, k = -1),
+          data = oc,
+          method = 'REML')
+oc$pr1 = predict(oc1, type = 'response')
+oc$pr2 = predict(oc2, type = 'response')
+
+ggplot(oc, aes(x = P)) +
+  geom_point(aes(y = SP)) +
+  geom_line(aes(y = pr1), col = 'blue') +
+  labs(x = 'x', y = 'y')
+```
+
+---
+# Smoothing
+
+### Basis Functions
+
+```{r eval=FALSE}
+gam(y ~ s(x1),
+    data = data)
+```
+
+```{r echo=FALSE, fig.width=6, fig.height=4}
+oc = read.csv("http://datadryad.org/bitstream/handle/10255/dryad.39576/OstraMRegS400JB.txt?sequence=1", 
+              sep = "\t")
+
+oc1 = gam(SP ~ s(P, k = 3),
+          data = oc,
+          method = 'REML')
+oc2 = gam(SP ~ s(P, k = -1),
+          data = oc,
+          method = 'REML')
+oc$pr1 = predict(oc1, type = 'response')
+oc$pr2 = predict(oc2, type = 'response')
+
+ggplot(oc, aes(x = P)) +
+  geom_point(aes(y = SP)) +
+  geom_line(aes(y = pr1), col = 'blue') +
+  geom_line(aes(y = pr2), col = 'red') +
+  labs(x = 'x', y = 'y')
+```
+
+---
+# Smoothing
+
+### Basis Functions
+
+Check for k:
+
+```{r eval=FALSE}
+gam.check(oc1)
+```
+
+```{r}
+k.check(oc1)
+```
+
+--
+If p-value is low, k might be too small
+
+---
+class: center, inverse, middle
+
+# Smooth terms
+
+---
+# Smooth terms
+
+Two additive smooths
+```{r eval=FALSE}
+gam(y ~ s(x1) + s(x2))
+```
+
+--
+Smooth-interactions
+```{r eval=FALSE}
+gam(y ~ s(x1, x2, k = 4))
+gam(y ~ s(x1, by = fac))
+```
+
+--
+Tensor product smooths
+```{r eval=FALSE}
+gam(y ~ te(x1, x2, k = c(4,8))) # interaction on different scales
+```
+
+---
+class: center, inverse, middle
+# Splines
+
+---
+# Splines
+
+__Thin plate__ regression spline
+
+- default
+
+```{r eval=FALSE}
+gam(y ~ s(x, bs = 'tp'),
+    data = data)
+```
+
+---
+# Splines
+
+__Cyclic cubic__ regression splines
+
+- for cyclical data (e.g. seasons)
+
+```{r eval=FALSE}
+gam(y ~ s(x, bs = 'cc'),
+    data = data)
+```
+
+<img src="/home/scharmueller/Projects/model-seasonality/pre_emergence_herbicides.png" width="500px" style="position:absolute; right:30px; bottom:20px;">
+
+---
+# Splines
+
+__Soap Films__
+- boundary polygons can be introduced
+- spatial models
+
+```{r eval=FALSE}
+gam(y ~ s(x, y, bs = 'so', xt = list(bnd = boundary_polygon)),
+    data = data)
+```
+
+---
+# Splines
+
+Discrete __random effects__
+
+- classes (e.g. age, sex)
+- sites, states, rivers, lakes
+- no need to set k (equals number of levels)
+  
+```{r eval=FALSE}
+gam(y ~ s(x, bs = 're'),
+    data = data)
+```
+
+---
+class: center, inverse, middle
+# Visualisation
+
+---
+# Visualisation
+
+```{r}
+ir1 = gam(Sepal.Length ~ s(Petal.Length),
+          data = iris,
+          family = 'gaussian',
+          method = 'REML')
+```
+
+---
+# Visualisation
+
+Partial effect plots
+
+.pull-left[
+```{r message=FALSE}
+require(mgcv)
+plot(ir1, pages = 1)
+```
+]
+
+.pull-right[
+```{r message=FALSE }
+require(gratia)
+draw(ir1)
+```
+]
+
+---
+# Visualisation
+
+Multiple covariates
+
+```{r}
+mt1 = gam(mpg ~ s(disp) + s(hp),
+          data = mtcars,
+          family = 'gaussian',
+          method = 'REML')
+```
+
+---
+# Visualisation
+
+```{r, fig.width=8, fig.height=5.5}
+vis.gam(mt1, # GAM object
+        view = c("disp", "hp"), # variables
+        plot.type = "persp", # 3D plot
+        theta = 135, # horizontal rotation
+        phi = 10, # phi vertical rotation
+        r = 10) # zoom
+```
+
+???
+yellow: larger predictions<br>
+red: smaller predictions<br>
+mpg: miles per gallon<br>
+disp: displacement (German: Hubraum)<br>
+hp: horsepower<br>
+
+---
+# Visualisation
+
+```{r, fig.width=8, fig.height=5.5}
+vis.gam(mt1, # GAM object
+        view = c("disp", "hp"), # variables
+        plot.type = "contour") # contour plot or heatmap
+```
+
+---
+class: center, inverse, middle
+# Exercise 1
+
+---
+class: center, inverse, middle
+# Hierachical GAMs
+
+---
+# Hierachical GAMs
+
+- Hierachical data: grouped data (factor!)
+- non-linear relationships
+- shape of function can vary between grouping/factor levels
+
+<br>
+
+![](/home/scharmueller/Projects/workshop-sefs11/data/pederson_hierachical_gam.png)
+
+---
+# Global Smoother
+
+- single global smooth term for each variable
+- level-individual __random effect intercepts__ (`bs = 're'`)
+
+```{r warning=FALSE, fig.width=5, fig.height=4}
+spr_G = gam(logSize ~ s(days) +
+                      s(plot, bs = 're'),
+            data = Spruce,
+            method = 'REML')
+plot(spr_G, pages = 1)
+```
+
+---
+# Global Smoother + Group Level Smoother
+
+- factor-smooth interaction (`bs = 'fs'`)
+- single global smooth term for each variable
+- __varying slopes__
+- same wiggliness (i.e. complexity) of smooths
+
+```{r warning=FALSE, fig.width=5, fig.height=4}
+spr_GS = gam(logSize ~ s(days) +
+                       s(days, plot, bs = 'fs'),
+             data = Spruce,
+             method = 'REML')
+plot(spr_GS, pages = 1)
+```
+
+---
+# Global Smoother + Group Level Smoother
+
+- `s(x, by = fac)` and `s(fac, bs = 're')`
+- similar to GS
+- varying slopes
+- __different wiggliness__ (i.e. complexity) of smooths
+
+```{r}
+spr_GI = gam(logSize ~ s(days) +
+                       s(days, by = plot) +
+                       s(plot, bs = 're'),
+            data = Spruce,
+            method = 'REML')
+```
+
+---
+class: center, inverse, middle
+# Model output
+
+---
+# Model output
+
+```{r echo=FALSE}
+ma1 = gam(egg.count ~ s(c.dist) + s(salinity),
+          data = mack,
+          family = 'poisson')
+```
+
+```{r echo=FALSE, eval=FALSE}
+summary(ma1)
+```
+
+Summary
+```{r eval=FALSE}
+summary(mod)
+```
+
+Checking
+```{r eval=FALSE}
+gam.check(mod)
+```
+
+AIC
+```{r eval=FALSE}
+AIC(mod)
+```
+
+Predict
+```{r eval=FALSE}
+predict(mod)
+```
+
+---
+# Model summary
+
+```{r echo=FALSE}
+summary(ma1)
+```
+
+---
+# Model checking
+
+```{r echo=FALSE}
+gam.check(ma1)
+```
+
+???
+gam.check() - console output
+
+- number of basis functions
+  - If a term in gam.check is significant, increas k, refit and check again
+
+gam.check() - plots
+
+- Q-Q plot (compares residuals to a normal distribution)
+  - follow straight line
+- Histogram of residuals
+  - should be bell symmetrically shaped
+- Residual vs. Linear predictors
+  - Should be evenly distributed around zero
+- Response vs. Fitted values
+  - Perfect model would be a straight line
+  - We would also be happy if would follow a 1-to-1 line
+
+---
+# Model checking
+```{r echo=FALSE}
+mt2 = gam(mpg ~ s(hp) + s(disp),
+          data = mtcars,
+          family = 'gaussian',
+          method = 'REML')
+gam.check(mt2)
+```
+
+---
+class: center, inverse, middle
+# Exercise 2
+
+---
+class: middle
+# [Thank you for participating in the course!]()
+
+Structural Equation Modelling (Moritz Link) 15.00 - 16.30
+
+---
+# Tutorials, Blogs
+
+- Generalized Additive Models in R (Noam Ross)
+  - <https://noamross.github.io/gams-in-r-course>
+- Doing magic and analyzing seasonal time series with GAM (Generalized Additive Model) in R
+  - <https://petolau.github.io/Analyzing-double-seasonal-time-series-with-GAM-in-R/>
+- From the Bottom of the Heap - Blog by Gavin Simpson
+  - <https://www.fromthebottomoftheheap.net/>
+- Introducing gratia
+  - <https://www.fromthebottomoftheheap.net/2018/10/23/introducing-gratia/>
+- Noam Ross Github
+  - <https://github.com/noamross/gam-resources>
+- Environmental computing
+ - <http://environmentalcomputing.net/intro-to-gams>
+
+---
+# Prediction
+
+```{r}
+gam_sim = gam(y ~ s(x),
+              data = sim,
+              family = 'gaussian')
+pred = predict(gam_sim, type = 'response', se.fit = TRUE)
+
+sim$fit = pred$fit
+sim$lwr = pred$fit - (2 * pred$se.fit)
+sim$upr = pred$fit + (2 * pred$se.fit)
+```
+
+```{r echo=FALSE, fig.width=6, fig.height=4}
+ggplot(sim, aes(y = y, x = x)) +
+  geom_point(col = 'gray') +
+  geom_ribbon(aes(ymin = lwr, ymax = upr), fill = 'red', alpha = 0.4) +
+  geom_line(aes(y = fit), col = 'red')
+```
+
+---
+class: center, inverse, middle
+# Model selection
+
+---
+# Model selection
+
+If you are not interested in prediction, but the most parsimonious model
+
+- penalty on overall slope (in addition to wiggliness penalty)
+- similar to ridge regression, lasso
+
+```{r eval=FALSE}
+select = TRUE
+```
+
+```{r, eval=FALSE}
+gam(y ~ s(x1) + s(x2) + s(x3),
+    select = TRUE,
+    data = data,
+    method = 'REML')
+```
+
+---
+# Model selection
+
+- AIC
+- expert subject
+- computational time
+- inferential goals of the study
+
+
+
+
+
+
+
+
+
+
+
+
