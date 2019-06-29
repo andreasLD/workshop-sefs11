@@ -440,7 +440,7 @@ gam(y ~ s(x1) + s(x2))
 --
 Smooth-interactions
 ```{r eval=FALSE}
-gam(y ~ s(x1, x2, k = 4))
+gam(y ~ s(x1, x2)) # common way to declare spatial data
 gam(y ~ s(x1, by = fac))
 ```
 
@@ -603,6 +603,7 @@ class: center, inverse, middle
 
 - single global smooth term for each variable
 - level-individual __random effect intercepts__ (`bs = 're'`)
+- mixed models (like in lme4, nlme)
 
 ```{r warning=FALSE, fig.width=5, fig.height=4}
 spr_G = gam(logSize ~ s(days) +
