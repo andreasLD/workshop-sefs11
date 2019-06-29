@@ -6,7 +6,7 @@ This is the GitHub repository for the workshop  "Advanced analysis of ecological
 
 * Date:   Sunday, **June 30th 2019**
 * Time: **10.00 - 16.45** 
-* Location:  **TBA**
+* Location:  **B01 Faculty of Science, Deptartment of Biology building ( Rooseveltov trg 6, Zagreb)** 
 
 
 
