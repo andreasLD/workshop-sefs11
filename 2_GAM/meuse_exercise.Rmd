@@ -5,6 +5,8 @@ editor_options:
   chunk_output_type: console
 ---
 
+This exercise is taken from Noam Ross' [GAM course](https://noamross.github.io/gams-in-r-course/)
+
 # Setup
 ```{r setup}
 require(mgcv)
