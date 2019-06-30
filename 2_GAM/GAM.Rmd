@@ -59,7 +59,8 @@ data('mack')
   - Effects and distribution of pesticides in freshwaters
   - Big(ish) ecotoxicological data processing
 
-Talk: Ecotoxicology and stress responses: Monday, 14:45 (Crystall ballroom 2G)
+Talk: Standartox - A tool for assessing the risk of chemicals<br>
+Ecotoxicology and stress responses: Monday, 14:45 (Crystall ballroom 2G)
   
 - Teaching:
   - Statistics
@@ -73,8 +74,6 @@ Talk: Ecotoxicology and stress responses: Monday, 14:45 (Crystall ballroom 2G)
 <img src='/home/scharmueller/Projects/workshop-sefs11/organisation/andreas_mai14_groß.jpg' width='150px'
 style='position:absolute; right:40px; top:100px;'>
 
-
-
 ---
 # Research
 
@@ -82,10 +81,15 @@ style='position:absolute; right:40px; top:100px;'>
 
 - Modeling __benthic diatom__ abundance and occurrence patterns in freshwater
 
+.pull-right[
 
-<img src="/home/scharmueller/Projects/model-seasonality/pre_emergence_herbicides.png" width="500px" style="position:absolute; left:15px; bottom:20px;">
+Szöcs et al. 2017
 
-<img src="/home/scharmueller/Projects/workshop-sefs11/data/szoecs_risk.png" width="350px" style="position:absolute; right:70px; bottom:190px;">
+]
+
+<img src="/home/scharmueller/Projects/model-seasonality/pre_emergence_herbicides.png" width="500px" style="position:absolute; left:15px; bottom:2px;">
+
+<img src="/home/scharmueller/Projects/workshop-sefs11/data/szoecs_risk.png" width="350px" style="position:absolute; right:70px; bottom:140px;">
 
 ---
 class: center, inverse, middle
@@ -147,7 +151,7 @@ ggplot(sim, aes(y = y, x = x)) +
 ---
 # Polynomial regression
 
-- specific patterns, not as flexible as GAMs
+- specific patterns, not very flexible
 - might lead to poor residuals, predictions, extrapolations
 
 $$y = \beta_0 + \beta_1x_1 + \beta_2x_1^2 + \beta_3x_1^3 + \epsilon, \epsilon \sim N(0,\sigma^2)$$
@@ -201,25 +205,6 @@ ggplot(sim, aes(y = y, x = x)) +
 ```
 
 ---
-# Why GAMs?
-
-<https://noamross.github.io/gams-in-r-course>
-
-<img src='https://raw.githubusercontent.com/noamross/gams-in-r-course/master/images/tradeoff-slider.png'
-width='650px' style="position:absolute; left:130px; top:350px;">
-
-<img src='/home/scharmueller/Projects/workshop-sefs11/organisation/noam_ross_gam_course.png'
-width='300px' style="position:absolute; right:60px; top:40px;">
-
----
-# What are GAMs?
-
-<https://www.fromthebottomoftheheap.net>
-
-<blockquote class="twitter-tweet" data-conversation="none" data-lang="fr"><p lang="en" dir="ltr">140 char vrsn<br><br>1 GAMs are just GLMs<br>2 GAMs fit wiggly terms<br>3 use + s(foo) not foo in frmla<br>4 use method = &quot;REML&quot;<br>5 gam.check()</p>&mdash; Dr Gavin Simpson (@ucfagls) <a href="https://twitter.com/ucfagls/status/842444686513991680?ref_src=twsrc%5Etfw">16 march 2017</a></blockquote>
-<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-
----
 # GAMs in R
 
 `require(mgcv)` <https://cran.r-project.org/web/packages/mgcv/index.html>
@@ -247,7 +232,7 @@ require(mgcv)
 gam(y ~ s(x1, bs = 'tp', k = -1) + x2, # formula
     data = data, # data
     family = 'gaussian', # family object
-    method = 'REML' # default: 'GCV.Cp'
+    method = 'REML', # default: 'GCV.Cp'
     sp = NULL) # smoothing parameter
 ```
 
@@ -260,7 +245,7 @@ Formula:
 require(mgcv)
 
 # gam(y ~ 
-      s(# smooth term
+      s(# smooth term s(), te()
         x1, # predictor
         bs = 'tp', # spline basis
         k = -1, # number of basis functions
@@ -284,8 +269,7 @@ $$Fit = Likelihood - \lambda \times Wiggliness$$
 
 - Likelihood: How well a GAM captures patterns in the data
 - Wiggliness: Complexity of a smooth
-- Trade-off between Likelihood and Wiggliness
-- $\lambda$ is optimized in `gam()` and controls the trade-off
+- $\lambda$ is optimized in `gam()` and controls the trade-off between Likelihood and Wiggliness
 
 .footnote[
 taken from: <https://noamross.github.io/gams-in-r-course>
@@ -502,9 +486,17 @@ Discrete __random effects__
 - no need to set k (equals number of levels)
   
 ```{r eval=FALSE}
-gam(y ~ s(x, bs = 're'),
+gam(y ~ s(x) + s(fac, bs = 're'),
     data = data)
 ```
+
+---
+# What are GAMs?
+
+<https://www.fromthebottomoftheheap.net>
+
+<blockquote class="twitter-tweet" data-conversation="none" data-lang="fr"><p lang="en" dir="ltr">140 char vrsn<br><br>1 GAMs are just GLMs<br>2 GAMs fit wiggly terms<br>3 use + s(foo) not foo in frmla<br>4 use method = &quot;REML&quot;<br>5 gam.check()</p>&mdash; Dr Gavin Simpson (@ucfagls) <a href="https://twitter.com/ucfagls/status/842444686513991680?ref_src=twsrc%5Etfw">16 march 2017</a></blockquote>
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 ---
 class: center, inverse, middle
@@ -585,6 +577,86 @@ class: center, inverse, middle
 
 ---
 class: center, inverse, middle
+# Model output
+
+---
+# Model output
+
+```{r echo=FALSE}
+ma1 = gam(egg.count ~ s(c.dist) + s(salinity),
+          data = mack,
+          family = 'poisson')
+```
+
+```{r echo=FALSE, eval=FALSE}
+summary(ma1)
+```
+
+Summary
+```{r eval=FALSE}
+summary(mod)
+```
+
+Checking
+```{r eval=FALSE}
+gam.check(mod)
+k.check(mod)
+```
+
+AIC
+```{r eval=FALSE}
+AIC(mod)
+```
+
+Predict
+```{r eval=FALSE}
+predict(mod)
+```
+
+---
+# Model summary
+
+```{r echo=FALSE}
+summary(ma1)
+```
+
+---
+# Model checking
+
+```{r echo=FALSE}
+gam.check(ma1)
+```
+
+???
+gam.check() - console output
+
+- number of basis functions
+  - If a term in gam.check is significant, increas k, refit and check again
+
+gam.check() - plots
+
+- Q-Q plot (compares residuals to a normal distribution)
+  - follow straight line
+- Histogram of residuals
+  - should be bell symmetrically shaped
+- Residual vs. Linear predictors
+  - Should be evenly distributed around zero
+- Response vs. Fitted values
+  - Perfect model would be a straight line
+  - We would also be happy if would follow a 1-to-1 line
+
+---
+# Model checking
+```{r echo=FALSE}
+mt2 = gam(mpg ~ s(hp) + s(disp),
+          data = mtcars,
+          family = 'gaussian',
+          method = 'REML')
+gam.check(mt2)
+```
+
+---
+class: center, inverse, middle
 # Hierachical GAMs
 
 ---
@@ -647,85 +719,6 @@ spr_GI = gam(logSize ~ s(days) +
 
 ---
 class: center, inverse, middle
-# Model output
-
----
-# Model output
-
-```{r echo=FALSE}
-ma1 = gam(egg.count ~ s(c.dist) + s(salinity),
-          data = mack,
-          family = 'poisson')
-```
-
-```{r echo=FALSE, eval=FALSE}
-summary(ma1)
-```
-
-Summary
-```{r eval=FALSE}
-summary(mod)
-```
-
-Checking
-```{r eval=FALSE}
-gam.check(mod)
-```
-
-AIC
-```{r eval=FALSE}
-AIC(mod)
-```
-
-Predict
-```{r eval=FALSE}
-predict(mod)
-```
-
----
-# Model summary
-
-```{r echo=FALSE}
-summary(ma1)
-```
-
----
-# Model checking
-
-```{r echo=FALSE}
-gam.check(ma1)
-```
-
-???
-gam.check() - console output
-
-- number of basis functions
-  - If a term in gam.check is significant, increas k, refit and check again
-
-gam.check() - plots
-
-- Q-Q plot (compares residuals to a normal distribution)
-  - follow straight line
-- Histogram of residuals
-  - should be bell symmetrically shaped
-- Residual vs. Linear predictors
-  - Should be evenly distributed around zero
-- Response vs. Fitted values
-  - Perfect model would be a straight line
-  - We would also be happy if would follow a 1-to-1 line
-
----
-# Model checking
-```{r echo=FALSE}
-mt2 = gam(mpg ~ s(hp) + s(disp),
-          data = mtcars,
-          family = 'gaussian',
-          method = 'REML')
-gam.check(mt2)
-```
-
----
-class: center, inverse, middle
 # Exercise 2
 
 ---
@@ -770,10 +763,6 @@ ggplot(sim, aes(y = y, x = x)) +
   geom_ribbon(aes(ymin = lwr, ymax = upr), fill = 'red', alpha = 0.4) +
   geom_line(aes(y = fit), col = 'red')
 ```
-
----
-class: center, inverse, middle
-# Model selection
 
 ---
 # Model selection

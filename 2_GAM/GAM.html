@@ -15,7 +15,7 @@ class: center, middle, inverse, title-slide
 ## An introduction
 ### Andreas Scharmüller
 ### Quantitative Landscape Ecology<br>University Koblenz-Landau
-### 30.6.2019 (updated: 2019-06-29)
+### 30.6.2019 (updated: 2019-06-30)
 
 ---
 
@@ -32,7 +32,8 @@ class: center, middle, inverse, title-slide
   - Effects and distribution of pesticides in freshwaters
   - Big(ish) ecotoxicological data processing
 
-Talk: Ecotoxicology and stress responses: Monday, 14:45 (Crystall ballroom 2G)
+Talk: Standartox - A tool for assessing the risk of chemicals&lt;br&gt;
+Ecotoxicology and stress responses: Monday, 14:45 (Crystall ballroom 2G)
   
 - Teaching:
   - Statistics
@@ -46,8 +47,6 @@ Talk: Ecotoxicology and stress responses: Monday, 14:45 (Crystall ballroom 2G)
 &lt;img src='/home/scharmueller/Projects/workshop-sefs11/organisation/andreas_mai14_groß.jpg' width='150px'
 style='position:absolute; right:40px; top:100px;'&gt;
 
-
-
 ---
 # Research
 
@@ -55,10 +54,15 @@ style='position:absolute; right:40px; top:100px;'&gt;
 
 - Modeling __benthic diatom__ abundance and occurrence patterns in freshwater
 
+.pull-right[
 
-&lt;img src="/home/scharmueller/Projects/model-seasonality/pre_emergence_herbicides.png" width="500px" style="position:absolute; left:15px; bottom:20px;"&gt;
+Szöcs et al. 2017
 
-&lt;img src="/home/scharmueller/Projects/workshop-sefs11/data/szoecs_risk.png" width="350px" style="position:absolute; right:70px; bottom:190px;"&gt;
+]
+
+&lt;img src="/home/scharmueller/Projects/model-seasonality/pre_emergence_herbicides.png" width="500px" style="position:absolute; left:15px; bottom:2px;"&gt;
+
+&lt;img src="/home/scharmueller/Projects/workshop-sefs11/data/szoecs_risk.png" width="350px" style="position:absolute; right:70px; bottom:140px;"&gt;
 
 ---
 class: center, inverse, middle
@@ -106,7 +110,7 @@ glm(y ~ x,
 ---
 # Polynomial regression
 
-- specific patterns, not as flexible as GAMs
+- specific patterns, not very flexible
 - might lead to poor residuals, predictions, extrapolations
 
 `$$y = \beta_0 + \beta_1x_1 + \beta_2x_1^2 + \beta_3x_1^3 + \epsilon, \epsilon \sim N(0,\sigma^2)$$`
@@ -143,25 +147,6 @@ mgcv::gam(y ~ s(x1) + x2,
 ![](GAM_files/figure-html/unnamed-chunk-8-1.png)&lt;!-- --&gt;
 
 ---
-# Why GAMs?
-
-&lt;https://noamross.github.io/gams-in-r-course&gt;
-
-&lt;img src='https://raw.githubusercontent.com/noamross/gams-in-r-course/master/images/tradeoff-slider.png'
-width='650px' style="position:absolute; left:130px; top:350px;"&gt;
-
-&lt;img src='/home/scharmueller/Projects/workshop-sefs11/organisation/noam_ross_gam_course.png'
-width='300px' style="position:absolute; right:60px; top:40px;"&gt;
-
----
-# What are GAMs?
-
-&lt;https://www.fromthebottomoftheheap.net&gt;
-
-&lt;blockquote class="twitter-tweet" data-conversation="none" data-lang="fr"&gt;&lt;p lang="en" dir="ltr"&gt;140 char vrsn&lt;br&gt;&lt;br&gt;1 GAMs are just GLMs&lt;br&gt;2 GAMs fit wiggly terms&lt;br&gt;3 use + s(foo) not foo in frmla&lt;br&gt;4 use method = &amp;quot;REML&amp;quot;&lt;br&gt;5 gam.check()&lt;/p&gt;&amp;mdash; Dr Gavin Simpson (@ucfagls) &lt;a href="https://twitter.com/ucfagls/status/842444686513991680?ref_src=twsrc%5Etfw"&gt;16 march 2017&lt;/a&gt;&lt;/blockquote&gt;
-&lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8"&gt;&lt;/script&gt;
-
----
 # GAMs in R
 
 `require(mgcv)` &lt;https://cran.r-project.org/web/packages/mgcv/index.html&gt;
@@ -190,7 +175,7 @@ require(mgcv)
 gam(y ~ s(x1, bs = 'tp', k = -1) + x2, # formula
     data = data, # data
     family = 'gaussian', # family object
-    method = 'REML' # default: 'GCV.Cp'
+    method = 'REML', # default: 'GCV.Cp'
     sp = NULL) # smoothing parameter
 ```
 
@@ -204,7 +189,7 @@ Formula:
 require(mgcv)
 
 # gam(y ~ 
-      s(# smooth term
+      s(# smooth term s(), te()
         x1, # predictor
         bs = 'tp', # spline basis
         k = -1, # number of basis functions
@@ -228,8 +213,7 @@ class: center, inverse, middle
 
 - Likelihood: How well a GAM captures patterns in the data
 - Wiggliness: Complexity of a smooth
-- Trade-off between Likelihood and Wiggliness
-- `\(\lambda\)` is optimized in `gam()` and controls the trade-off
+- `\(\lambda\)` is optimized in `gam()` and controls the trade-off between Likelihood and Wiggliness
 
 .footnote[
 taken from: &lt;https://noamross.github.io/gams-in-r-course&gt;
@@ -401,9 +385,17 @@ Discrete __random effects__
   
 
 ```r
-gam(y ~ s(x, bs = 're'),
+gam(y ~ s(x) + s(fac, bs = 're'),
     data = data)
 ```
+
+---
+# What are GAMs?
+
+&lt;https://www.fromthebottomoftheheap.net&gt;
+
+&lt;blockquote class="twitter-tweet" data-conversation="none" data-lang="fr"&gt;&lt;p lang="en" dir="ltr"&gt;140 char vrsn&lt;br&gt;&lt;br&gt;1 GAMs are just GLMs&lt;br&gt;2 GAMs fit wiggly terms&lt;br&gt;3 use + s(foo) not foo in frmla&lt;br&gt;4 use method = &amp;quot;REML&amp;quot;&lt;br&gt;5 gam.check()&lt;/p&gt;&amp;mdash; Dr Gavin Simpson (@ucfagls) &lt;a href="https://twitter.com/ucfagls/status/842444686513991680?ref_src=twsrc%5Etfw"&gt;16 march 2017&lt;/a&gt;&lt;/blockquote&gt;
+&lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8"&gt;&lt;/script&gt;
 
 ---
 class: center, inverse, middle
@@ -498,75 +490,6 @@ class: center, inverse, middle
 
 ---
 class: center, inverse, middle
-# Hierachical GAMs
-
----
-# Hierachical GAMs
-
-- Hierachical data: grouped data (factor!)
-- non-linear relationships
-- shape of function can vary between grouping/factor levels
-
-&lt;br&gt;
-
-![](/home/scharmueller/Projects/workshop-sefs11/data/pederson_hierachical_gam.png)
-
----
-# Global Smoother
-
-- single global smooth term for each variable
-- level-individual __random effect intercepts__ (`bs = 're'`)
-- mixed models (like in lme4, nlme)
-
-
-```r
-spr_G = gam(logSize ~ s(days) +
-                      s(plot, bs = 're'),
-            data = Spruce,
-            method = 'REML')
-plot(spr_G, pages = 1)
-```
-
-![](GAM_files/figure-html/unnamed-chunk-33-1.png)&lt;!-- --&gt;
-
----
-# Global Smoother + Group Level Smoother
-
-- factor-smooth interaction (`bs = 'fs'`)
-- single global smooth term for each variable
-- __varying slopes__
-- same wiggliness (i.e. complexity) of smooths
-
-
-```r
-spr_GS = gam(logSize ~ s(days) +
-                       s(days, plot, bs = 'fs'),
-             data = Spruce,
-             method = 'REML')
-plot(spr_GS, pages = 1)
-```
-
-![](GAM_files/figure-html/unnamed-chunk-34-1.png)&lt;!-- --&gt;
-
----
-# Global Smoother + Group Level Smoother
-
-- `s(x, by = fac)` and `s(fac, bs = 're')`
-- similar to GS
-- varying slopes
-- __different wiggliness__ (i.e. complexity) of smooths
-
-
-```r
-spr_GI = gam(logSize ~ s(days) +
-                       s(days, by = plot) +
-                       s(plot, bs = 're'),
-            data = Spruce,
-            method = 'REML')
-```
-
----
-class: center, inverse, middle
 # Model output
 
 ---
@@ -586,6 +509,7 @@ Checking
 
 ```r
 gam.check(mod)
+k.check(mod)
 ```
 
 AIC
@@ -632,7 +556,7 @@ predict(mod)
 ---
 # Model checking
 
-![](GAM_files/figure-html/unnamed-chunk-43-1.png)&lt;!-- --&gt;
+![](GAM_files/figure-html/unnamed-chunk-40-1.png)&lt;!-- --&gt;
 
 ```
 ## 
@@ -673,7 +597,7 @@ gam.check() - plots
 
 ---
 # Model checking
-![](GAM_files/figure-html/unnamed-chunk-44-1.png)&lt;!-- --&gt;
+![](GAM_files/figure-html/unnamed-chunk-41-1.png)&lt;!-- --&gt;
 
 ```
 ## 
@@ -690,6 +614,75 @@ gam.check() - plots
 ##           k'  edf k-index p-value
 ## s(hp)   9.00 1.36    0.95    0.32
 ## s(disp) 9.00 4.67    1.37    0.95
+```
+
+---
+class: center, inverse, middle
+# Hierachical GAMs
+
+---
+# Hierachical GAMs
+
+- Hierachical data: grouped data (factor!)
+- non-linear relationships
+- shape of function can vary between grouping/factor levels
+
+&lt;br&gt;
+
+![](/home/scharmueller/Projects/workshop-sefs11/data/pederson_hierachical_gam.png)
+
+---
+# Global Smoother
+
+- single global smooth term for each variable
+- level-individual __random effect intercepts__ (`bs = 're'`)
+- mixed models (like in lme4, nlme)
+
+
+```r
+spr_G = gam(logSize ~ s(days) +
+                      s(plot, bs = 're'),
+            data = Spruce,
+            method = 'REML')
+plot(spr_G, pages = 1)
+```
+
+![](GAM_files/figure-html/unnamed-chunk-42-1.png)&lt;!-- --&gt;
+
+---
+# Global Smoother + Group Level Smoother
+
+- factor-smooth interaction (`bs = 'fs'`)
+- single global smooth term for each variable
+- __varying slopes__
+- same wiggliness (i.e. complexity) of smooths
+
+
+```r
+spr_GS = gam(logSize ~ s(days) +
+                       s(days, plot, bs = 'fs'),
+             data = Spruce,
+             method = 'REML')
+plot(spr_GS, pages = 1)
+```
+
+![](GAM_files/figure-html/unnamed-chunk-43-1.png)&lt;!-- --&gt;
+
+---
+# Global Smoother + Group Level Smoother
+
+- `s(x, by = fac)` and `s(fac, bs = 're')`
+- similar to GS
+- varying slopes
+- __different wiggliness__ (i.e. complexity) of smooths
+
+
+```r
+spr_GI = gam(logSize ~ s(days) +
+                       s(days, by = plot) +
+                       s(plot, bs = 're'),
+            data = Spruce,
+            method = 'REML')
 ```
 
 ---
@@ -734,10 +727,6 @@ sim$upr = pred$fit + (2 * pred$se.fit)
 ```
 
 ![](GAM_files/figure-html/unnamed-chunk-46-1.png)&lt;!-- --&gt;
-
----
-class: center, inverse, middle
-# Model selection
 
 ---
 # Model selection
